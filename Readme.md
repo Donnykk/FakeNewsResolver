@@ -23,7 +23,7 @@
 
 ## 三. 方法介绍
 本实验主要步骤分为数据处理、特征构建和模型训练，在方法的选择上，特征构建我选择了TF-IDF特征构建，
-模型的选择方面我尝试了朴素贝叶斯和岭回归、逻辑回归等方法
+模型的选择方面我尝试了朴素贝叶斯和岭回归、mlp和bert模型等方法
 
 ### TF-IDF特征构建
 TF-IDF 即词频-逆文档频率（Term Frequency-Inverse Document Frequency），是一种用于信息检索和文本挖掘的常用加权技术。我们先定义词频和逆文档频率两个概念：
@@ -90,6 +90,26 @@ $$ Loss=-\sum_{i=1}^{N}[y_i\log(\hat p_i)+(1-y_i)\log(1-\hat p_i)] $$
 
 逻辑回归简单而有效，容易理解和实现且适用于二分类问题。但对于特征之间存在高度相关性的情况，逻辑回归可能不表现得很好。
 
+### 多层感知机 MLP
+多层感知机也叫人工神经网络（ANN），除了输入输出层，它中间可以有多个隐层，最简单的MLP只含一个隐层，即三层的结构，如下图：
+![](/home/donny/Desktop/FakeNewsResolver/src/1.png#pic_center)
+
+MLP 是一种前馈神经网络，因为数据在网络中从输入层传递到输出层，没有反馈连接。在训练中，MLP使用反向传播算法来调整网络权重，以最小化预测输出与实际标签之间的误差。
+
+### 预训练语言模型 BERT 
+2018年底发布的BERT（Bidirectional Encoder Representations from Transformers）是一种迁移学习模型。BERT是一种预训练语言表征的方法，利用 Transformer 模型结构进行训练，具体来说，它是一个双向的 Transformer 编码器。
+
+BERT 的独特之处在于它的预训练方式。传统的语言模型是从左到右或从右到左单向预训练的，而 BERT 采用了一个双向的训练方式，同时考虑了上下文的信息。这种双向性使得 BERT 能够更好地理解句子中单词的含义和关系。
+
+BERT 的预训练任务主要包括两个：
+
+* Masked Language Model（MLM）： 随机地遮盖掉输入句子中的一些单词，然后尝试预测这些被遮盖单词的内容。这使得模型学习到了上下文中单词的语义。
+
+* Next Sentence Prediction（NSP）： 模型接收一对句子作为输入，并预测第二个句子是否是第一个句子的后续句子。这个任务有助于使模型学习到句子之间的关系。
+
+本实验中我们将采取预训练的BERT模型，在末端添加一个未训练过的神经元层，然后训练新的模型来完成虚假新闻分类的任务。
+
+
 ## 四. 关键代码细节
 * 首先是数据处理，读取训练数据后选取 ‘Title’，’Official Account Name‘，‘Report Content’三列进行合并，并划分训练集和测试集
     ```python
@@ -126,7 +146,8 @@ $$ Loss=-\sum_{i=1}^{N}[y_i\log(\hat p_i)+(1-y_i)\log(1-\hat p_i)] $$
     # clf = LogisticRegression(random_state=32)
     # clf = RidgeClassifier(alpha=1.0)
     # clf = BernoulliNB()
-    clf = MultinomialNB()
+    # clf = MultinomialNB()
+    clf = MLPClassifier(solver='sgd', activation='logistic', alpha=1e-4, hidden_layer_sizes=(50, 50), random_state=1,max_iter=100, verbose=True, learning_rate_init=.1)
     clf.fit(tfidf_train, y_train)
     y_pred = clf.predict(tfidf_test)
     ```
@@ -140,5 +161,16 @@ $$ Loss=-\sum_{i=1}^{N}[y_i\log(\hat p_i)+(1-y_i)\log(1-\hat p_i)] $$
     ```
  
 ## 五. 运行截图
+![](./src/2.png#pic_center)
 
 ## 六. 实验结果分析
+首先对几种方法的四个评价指标进行了对比：
+
+| Method | 多项式NB | 伯努利NB | 岭回归 | 逻辑回归 | 多层感知机 |
+| ------ | ------------- | ------------- | ------ | ------ | -------- |
+| Accuracy | 0.9285 | 0.9276 | 0.8606 | 0.9408 | 0.9351 |
+| Recall | 0.9170 | 0.7908 | 0.8688 | 0.8824 | 0.9059 |
+| F1_score | 0.8671 | 0.8475 | 0.7602 | 0.8835 | 0.8766 |
+| AUC | 0.9248 | 0.8825 | 0.8633 | 0.9216 | 0.9255 |
+
+以上的结果均为每种方法下尝试了多个不同参数后达到的最好成绩，可以看到这五种方法的效果差异并不大，相对而言逻辑回归和MLP的准确率较高，但仍不能让人满意，于是我在调研和探索后选用了 BERT 模型进行尝试，得到的结果如下：

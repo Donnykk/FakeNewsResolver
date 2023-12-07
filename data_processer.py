@@ -4,19 +4,19 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 def process_data(mod):
-    data = pd.read_csv(r'./train.news.csv', encoding='utf-8')
+    data = pd.read_csv(r'/home/donny/Desktop/FakeNewsResolver/train.news.csv', encoding='utf-8')
     labels = data.label
     data['Text'] = data['Title'].astype(str) + data['Ofiicial Account Name'].astype(str) + data['Report Content'].astype(str)
 
     # 分割训练集和测试集
     x_train, x_test,y_train,y_test = train_test_split(data['Text'], labels, test_size=0.01, random_state=20)
     
-    test_data = pd.read_csv(r'./test.feature.csv', encoding='utf-8')
+    test_data = pd.read_csv(r'/home/donny/Desktop/FakeNewsResolver/test.feature.csv', encoding='utf-8')
     x_test = test_data['Title'].astype(str) + test_data['Ofiicial Account Name'].astype(str) + test_data['Report Content'].astype(str)
     y_test = test_data['id']
     
     if mod == 1:
-        data = pd.read_csv(r'./train.news.csv', encoding='utf-8')
+        data = pd.read_csv(r'/home/donny/Desktop/FakeNewsResolver/train.news.csv', encoding='utf-8')
         labels = data.label
         data['Text'] = data['Title'].astype(str) + data['Ofiicial Account Name'].astype(str) + data['Report Content'].astype(str)
         x_train, x_test,y_train,y_test = train_test_split(data['Text'], labels, test_size=0.3, random_state=20)

@@ -17,17 +17,16 @@ tfidf_train, tfidf_test, y_train, y_test = data_processer.process_data(mod)
 # clf = RidgeClassifier(alpha=1.0)
 # clf = BernoulliNB()
 # clf = MultinomialNB()
-clf = MLPClassifier(solver='sgd', activation='logistic', alpha=1e-4, hidden_layer_sizes=(50, 50), random_state=1,
-                    max_iter=100, verbose=True, learning_rate_init=.1)
+clf = MLPClassifier(solver='sgd', activation='logistic', alpha=1e-4, hidden_layer_sizes=(50, 50), random_state=1, max_iter=100, verbose=True, learning_rate_init=.1)
 clf.fit(tfidf_train, y_train)
 y_pred = clf.predict(tfidf_test)
 
 # 保存至csv
-np.savetxt('./predict_data.csv', y_pred, fmt='%i')
-df = pd.read_csv('./predict_data.csv', encoding='utf-8', header=None)
+np.savetxt('/home/donny/Desktop/FakeNewsResolver/predict_data.csv', y_pred, fmt='%i')
+df = pd.read_csv('/home/donny/Desktop/FakeNewsResolver/predict_data.csv', encoding='utf-8', header=None)
 df.columns = ['label']
 df.insert(0, 'id', range(1, len(df)+1))
-df.to_csv('./predict_data.csv', index=False)
+df.to_csv('/home/donny/Desktop/FakeNewsResolver/predict_data.csv', index=False)
 
 # 评价指标
 if mod == 1:
